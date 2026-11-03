@@ -1,6 +1,6 @@
 """Lab 04 / Example 02: Let the LLM request our existing ticket classifier.
 This example deliberately stops after running the requested tool.
-The next lab will send tool results back to the model in an agent loop.
+Example 04 in this lab sends tool results back to the model in an agent loop.
 """
 
 import json

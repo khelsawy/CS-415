@@ -1,4 +1,4 @@
-"""CS 415 - Lab 05 / Example 04: First Agent Loop for our Ticket System.
+"""CS 415 - Lab 04 / Example 04: First Agent Loop for our Ticket System.
 
 New idea compared with Example 03:
   1. Ask the LLM which tool(s) it needs.
@@ -6,7 +6,7 @@ New idea compared with Example 03:
   3. Send each tool result BACK to the LLM using its tool_call_id.
   4. Repeat until the LLM returns a final answer (or we hit a safety limit).
 
-Run from sec-05:
+Run from sec-04:
     uv run python -m examples.04_ticket_agent_loop
 
 This demo uses a single fake ticket stored in process memory, not a database.
