@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Create Support Ticket</title>
+
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/create-ticket.js" defer></script>
+</head>
+
+<body>
+
+    <main class="login-card">
+
+        <div class="logo">AI</div>
+
+        <h1>Create Support Ticket</h1>
+
+        <p class="subtitle">
+            Describe your problem and our AI
+            will automatically classify it.
+        </p>
+
+        <form id="ticket-form">
+
+            <label for="phone">
+                Phone Number
+            </label>
+
+            <input
+                type="tel"
+                id="phone"
+                readonly
+                required
+            >
+
+            <label for="problem" class="field-label">
+                Problem Description
+            </label>
+
+            <textarea
+                id="problem"
+                rows="6"
+                minlength="5"
+                placeholder="Describe your problem..."
+                required
+            ></textarea>
+
+            <label class="urgent-row">
+                <input type="checkbox" id="urgent">
+                This is urgent
+            </label>
+
+            <button type="submit" id="submit-ticket">
+                Submit Ticket
+            </button>
+
+        </form>
+
+        <p id="ticket-status" role="status" aria-live="polite"></p>
+
+        <section id="ticket-result" class="ticket-result" hidden>
+
+            <h3>Ticket Created Successfully!</h3>
+
+            <p>Ticket Number: <strong id="ticket-id"></strong></p>
+
+            <p>Category: <strong id="ticket-category"></strong></p>
+
+            <p>Priority: <strong id="ticket-priority"></strong></p>
+
+            <p>Status: <strong id="ticket-current-status"></strong></p>
+
+        </section>
+
+        <a href="/chat" class="back-link">
+            ← Back to Chat
+        </a>
+
+    </main>
+
+</body>
+</html>

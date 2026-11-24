@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Ticket Assistant — Chat</title>
+
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/chat.js" defer></script>
+</head>
+
+<body class="chat-page">
+
+    <main class="chat-container">
+
+        <header class="chat-header">
+            <div>
+                <h2>AI Ticket Assistant</h2>
+                <p>Welcome, <span id="customer-name"></span></p>
+            </div>
+
+            <div class="chat-header-actions">
+
+                <a href="/create-ticket" class="header-link">
+                    + Create Ticket
+                </a>
+
+                <button id="logout-button" type="button">
+                    Logout
+                </button>
+
+            </div>
+        </header>
+
+        <section class="chat-messages" id="chat-messages">
+            <div class="message assistant-message">
+                <p id="welcome-message"></p>
+            </div>
+        </section>
+
+       <p id="chat-status" role="status" aria-live="polite"></p>
+
+        <form class="chat-input" id="chat-form">
+
+            <input
+                type="text"
+                id="message-input"
+                placeholder="Connecting to AI Assistant..."
+                autocomplete="off"
+                required
+                disabled
+            >
+
+            <button
+                type="submit"
+                id="send-button"
+                disabled
+            >
+                Send
+            </button>
+
+        </form>
+
+    </main>
+
+</body>
+</html>
