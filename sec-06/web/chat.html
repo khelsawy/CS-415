@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>AI Ticket Assistant</title>
+
+    <link rel="stylesheet" href="/static/style.css">
+
+    <script src="/static/chat.js" defer></script>
+</head>
+
+<body class="chat-page">
+
+    <div class="app-layout">
+
+        <!-- Conversation Sidebar -->
+
+        <aside class="conversation-sidebar">
+
+            <div class="sidebar-header">
+
+                <div class="sidebar-logo">AI</div>
+
+                <h2>Ticket Assistant</h2>
+
+                <p>Persistent AI Memory</p>
+
+            </div>
+
+            <button id="new-chat-button" type="button" disabled>
+
+                + New Chat
+
+            </button>
+
+            <div class="conversation-section">
+
+                <h3>Conversations</h3>
+
+                <div id="conversation-list">
+
+                    <p class="sidebar-placeholder">
+                        Loading conversations...
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="sidebar-footer">
+                CS-415 | Section 6
+            </div>
+
+        </aside>
+
+
+        <!-- Main Chat Area -->
+
+        <main class="chat-container">
+
+            <header class="chat-header">
+
+                <div>
+
+                    <h2>AI Ticket Assistant</h2>
+
+                    <p>
+                        Welcome,
+                        <span id="customer-name"></span>
+                    </p>
+
+                </div>
+
+                <div class="chat-header-actions">
+
+                    <a href="/create-ticket"
+                       class="header-link">
+
+                        + Create Ticket
+
+                    </a>
+
+                    <button id="logout-button"
+                            type="button">
+
+                        Logout
+
+                    </button>
+
+                </div>
+
+            </header>
+
+
+            <!-- Chat Messages -->
+
+            <section class="chat-messages"
+                     id="chat-messages">
+
+                <div class="message assistant-message">
+
+                    <p id="welcome-message"></p>
+
+                </div>
+
+            </section>
+
+
+            <!-- Chat Status -->
+
+            <p id="chat-status"
+               role="status"
+               aria-live="polite">
+            </p>
+
+
+            <!-- Message Input -->
+
+            <form class="chat-input" id="chat-form">
+
+                <input
+                    type="text"
+                    id="message-input"
+                    placeholder="Connecting to AI Assistant..."
+                    autocomplete="off"
+                    maxlength="4000"
+                    required
+                    disabled
+                >
+
+                <button
+                    type="submit"
+                    id="send-button"
+                    disabled
+                >
+                    Send
+                </button>
+
+            </form>
+
+        </main>
+
+    </div>
+
+</body>
+
+</html>

@@ -2,13 +2,14 @@
 
 CS-415 builds an AI-powered support ticket system one lab at a time. Students start with a Python script that classifies sample tickets, then turn it into a REST API, connect it to large language models (LLMs), and build an agent that answers questions about a customer's stored tickets. Each section preserves its own version of the project so you can run it independently and compare implementations.
 
-By the end of Section 5, you should be able to:
+By the end of Section 6, you should be able to do the following.
 
 - Represent and process support tickets with Python functions, collections, and type hints.
 - Validate data with Pydantic and expose it through a modular FastAPI application.
 - Switch LLM providers through configuration, handle streamed replies, and validate model-generated data.
 - Build a bounded tool-calling loop that validates tool arguments and passes results back to the model.
 - Store tickets in Supabase and explain how customer-scoped queries and short-term chat history support a multi-turn conversation.
+- Persist multiple conversations per customer, restore transcripts after a restart, and control how much history reaches the model.
 
 ## Course progress
 
@@ -19,7 +20,7 @@ By the end of Section 5, you should be able to:
 | [3](#section-3--modular-ticket-api-and-llm-providers) | Complete | Split the API into modules and add a shared LLM client. |
 | [4](#section-4--from-llm-calls-to-ai-agents) | Complete | Generate replies, stream text, and run a tool-calling loop. |
 | [5](#section-5--database-backed-ticket-system-and-customer-chat) | Complete | Store tickets and answer customer questions through web and terminal chat. |
-| 6 | Not started | |
+| [6](#section-6--persistent-ai-agent-memory) | Complete | Restore customer conversations from Supabase and give the agent a bounded memory window. |
 
 ## Repository structure
 
@@ -55,8 +56,19 @@ CS-415/
 │   ├── schema.sql              # Tables and backend access for a new lab project
 │   ├── seed.sql                # Optional fictional customers and tickets
 │   └── .env.example            # LLM and Supabase settings template
+├── sec-06/
+│   ├── ticket_api/             # Conversation API, repository, and service
+│   ├── agent/                  # Reply routing, scoped tools, and sliding window
+│   ├── llm/                    # Provider adapters
+│   ├── web/                    # Browser chat with a conversation sidebar
+│   ├── examples/               # Standalone agent-loop recap
+│   ├── README.md               # Setup, restart check, and limitations
+│   ├── schema.sql              # Section 5 tables for a fresh project
+│   ├── memory_schema.sql       # Section 6 conversations and messages
+│   ├── seed.sql                # Optional fictional customers and tickets
+│   └── .env.example            # LLM and Supabase settings template
 ├── assignments/                # Written assignment instructions
-├── slides/                     # PowerPoint decks for Sections 1–5
+├── slides/                     # PowerPoint decks for Sections 1–6
 └── references/
     └── ollama-colab/           # Setup guide, notebook, test script, and .env template
 ```
@@ -69,8 +81,8 @@ CS-415/
 | Pydantic and FastAPI | Validate requests, responses, and tool arguments. Serve REST endpoints and provide interactive Swagger UI. |
 | Requests and python-dotenv | Make HTTP requests to LLM providers and load section-specific configuration. |
 | Ollama, Google Colab, ngrok, Groq, and SovereignEG | Run models locally or remotely. The Colab reference uses an authenticated HTTPS tunnel through ngrok. |
-| Supabase Python client and PostgreSQL | Store and query customers and tickets in Section 5. |
-| HTML, CSS, and JavaScript | Implement Section 5's browser forms and chat using the FastAPI backend. |
+| Supabase Python client and PostgreSQL | Store customers and tickets in Section 5, then add conversations and messages in Section 6. |
+| HTML, CSS, and JavaScript | Implement browser forms and chat using the FastAPI backend. |
 
 [pyproject.toml](pyproject.toml) also declares LiteLLM. The section provider adapters make their requests directly with Requests.
 
@@ -113,11 +125,13 @@ uv run python --version
 
 Start each command block at the repository root, the folder containing `pyproject.toml`, unless the instructions say otherwise. Stop a running server with **Ctrl+C** and run `cd ..` if you entered a section folder before starting another block. The lab servers use port 8000 by default, so run them one at a time.
 
-Section 1 and the Section 2–4 HTTP APIs run without provider credentials. Configure an LLM for the Section 4 demos and for Section 5 classification and chat.
+Section 1 and the Section 2–4 HTTP APIs run without provider credentials. Configure an LLM for the Section 4 demos and for classification and chat in Sections 5 and 6.
 
-### LLM configuration for Sections 3–5
+### LLM configuration for Sections 3–6
 
-Copy the template for your section to a private `.env` file in the same folder. Edit your existing `.env` if you already have one. [Section 3 template](sec-03/.env.example) · [Section 4 template](sec-04/.env.example) · [Section 5 template](sec-05/.env.example)
+<a name="llm-configuration-for-sections-35"></a>
+
+Copy the template for your section to a private `.env` file in the same folder. Edit your existing `.env` if you already have one. [Section 3 template](sec-03/.env.example) · [Section 4 template](sec-04/.env.example) · [Section 5 template](sec-05/.env.example) · [Section 6 template](sec-06/.env.example)
 
 For example, to create the Section 5 file from the repository root:
 
@@ -133,7 +147,7 @@ if (-not (Test-Path sec-05/.env)) { Copy-Item sec-05/.env.example sec-05/.env }
 if [ ! -e sec-05/.env ]; then cp sec-05/.env.example sec-05/.env; fi
 ```
 
-Replace `sec-05` with `sec-03` or `sec-04` when configuring those sections. Set `LLM_PROVIDER` and fill in the variables listed for your connection. The selected model must be available at the configured endpoint.
+Use the corresponding section directory for Sections 3, 4, or 6. Set `LLM_PROVIDER` and fill in the variables listed for your connection. The selected model must be available at the configured endpoint.
 
 | `LLM_PROVIDER` | Connection | Required settings |
 | --- | --- | --- |
@@ -146,7 +160,7 @@ Use a base URL. The client appends `/api/chat` for Ollama or `/chat/completions`
 
 For Colab, follow the [Ollama + Google Colab guide](references/ollama-colab/README.md). Keep the runtime and tunnel running while you use the local examples. Match `OLLAMA_COLAB_MODEL` to the model loaded in the notebook. The notebook's default profile uses `qwen3.5:4b`, so update the template if you use that profile. The standalone reference script uses its own `OLLAMA_*` settings under `references/ollama-colab/`.
 
-Section 4 Example 01 uses SovereignEG, the provider with an implemented streaming method. Choose a model that supports tool calling for Examples 02–04 and the Section 5 chat. Both agent loops also require each model tool call to include an ID so Python can attach the matching result.
+Section 4 Example 01 uses SovereignEG, the provider with an implemented streaming method. Choose a tool-capable model for Examples 02–04 and for chat in Sections 5 and 6. Agent loops match tool calls and results by ID. The Section 6 Ollama adapter supplies IDs for native calls that omit them.
 
 ## Section 1 — Python fundamentals for AI agents
 
@@ -270,6 +284,19 @@ Enter the phone number of an existing demo customer, then ask about their ticket
 
 For a standalone recap, run `uv run python -m examples.04_ticket_agent_loop` from `sec-05/`. The [sample-ticket agent loop](sec-05/examples/04_ticket_agent_loop.py) looks up one fictional ticket in memory and calls the Section 5 LLM classifier. It only needs LLM settings.
 
+## Section 6 — Persistent AI agent memory
+
+Supabase stores a complete transcript for each chat, and the browser sidebar lets a customer create and reopen multiple conversations after a server restart. Sliding Window Memory sends up to 20 recent messages to the LLM, typically 10 completed turns in sequential use. An intent classifier routes greetings and transcript questions to ordinary conversation. Python requires a successful customer-scoped tool result before accepting a reply to a turn routed as a ticket lookup.
+
+For a fresh project, run the [base schema](sec-06/schema.sql) and then the [memory schema](sec-06/memory_schema.sql). If the Section 5 tables are already in place, apply only the memory schema. The [Section 6 guide](sec-06/README.md) documents setup, endpoints, the restart exercise, and the limits of phone-based classroom identification.
+
+```text
+cd sec-06
+uv run python -m uvicorn ticket_api.main:app --reload
+```
+
+Open [the login page](http://127.0.0.1:8000/login) and select **New Chat**. After sending a message, restart FastAPI and reopen that conversation to see the saved transcript. If a send fails, the browser keeps the draft. If the outcome is uncertain, reopen the conversation and look for the saved turn before resending. The [standalone agent recap](sec-06/examples/04_ticket_agent_loop.py) remains available as a separate LLM-only exercise.
+
 ## Assignments and supporting materials
 
 - The [assignments folder](assignments/) contains [Assignment 01 — Modular Programming & Ollama API](assignments/assignment-01.md). It asks you to modularize the Section 2 API and write a Python client for local Ollama or Ollama Cloud. The assignment page contains submission instructions and the deadline.
@@ -285,5 +312,6 @@ The [slides folder](slides/) contains the PowerPoint decks for each lab.
 - [Section 3 — Modular Ticket API and LLM Providers](slides/CS415_Lab03_Modular_Ticket_API_and_LLM_Providers.pptx)
 - [Section 4 — From LLM Calls to AI Agents](slides/CS415_Lab04_From_LLM_Calls_to_AI_Agents.pptx)
 - [Section 5 — Real Ticket System (instructor deck)](slides/CS415_Lab05_Real_Ticket_System_Instructor_Deck.pptx)
+- [Section 6 — Persistent AI Agent Memory (instructor deck)](slides/CS415_Lab06_Persistent_AI_Agent_Memory_Instructor_Deck.pptx)
 
 **Instructor** · Mohamed Elsawy

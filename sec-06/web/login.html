@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Ticket Assistant — Login</title>
+
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/login.js" defer></script>
+</head>
+
+<body>
+
+    <main class="login-card">
+
+        <div class="logo">AI</div>
+
+        <h1>Ticket Assistant</h1>
+
+        <p class="subtitle">
+            Welcome! Enter your phone number to continue.
+        </p>
+
+        <form id="login-form">
+
+            <label for="phone">Phone Number</label>
+
+            <input
+                type="tel"
+                id="phone"
+                name="phone"
+                placeholder="01000000000"
+                autocomplete="tel"
+                required
+            >
+
+            <button type="submit" id="submit-button">
+                Continue
+            </button>
+
+        </form>
+        <form id="register-form" hidden>
+
+            <h3>New Customer</h3>
+
+            <p class="subtitle">
+                We couldn't find your phone number.
+                Please enter your name to create an account.
+            </p>
+
+            <label for="customer-name-input">
+                Your Name
+            </label>
+
+            <input
+                type="text"
+                id="customer-name-input"
+                placeholder="Enter your full name"
+                minlength="2"
+                maxlength="100"
+                required
+            >
+
+            <button type="submit" id="register-button">
+                Create Account
+            </button>
+
+        </form>
+        <p id="message" role="status" aria-live="polite"></p>
+
+        <p class="footer">
+            CS-415 | AI-Powered Ticket Management System
+        </p>
+
+    </main>
+
+</body>
+</html>
